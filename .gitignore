@@ -1,0 +1,52 @@
+# Environment
+.env
+.env.local
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+*.pyo
+.venv/
+venv/
+env/
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Data files (large, gitignored)
+data/snomed/*
+data/rxnorm/*
+data/raw/*.json
+!data/snomed/.gitkeep
+!data/rxnorm/.gitkeep
+!data/raw/.gitkeep
+
+# Neo4j
+neo4j_data/
+neo4j_plugins/
+
+# Streamlit
+.streamlit/secrets.toml
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Pytest
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Logs
+*.log
+logs/
