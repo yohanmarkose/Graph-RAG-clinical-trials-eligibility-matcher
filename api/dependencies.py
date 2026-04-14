@@ -36,7 +36,32 @@ async def lifespan(app: FastAPI) -> AsyncGenerator:
 
     llm = get_llm_provider(cfg)
     linker = EntityLinker()
-    engine = MatchEngine(driver)
+
+    # Conditionally initialise the ReKnoS candidate finder
+    reknos_finder = None
+    if cfg.reknos.enabled:
+        try:
+            from matcher.reknos_finder import ReKnoSCandidateFinder
+            from matcher.super_relations import ClinicalTrialsKGInterface
+
+            kg_interface = ClinicalTrialsKGInterface(driver)
+            reknos_finder = ReKnoSCandidateFinder(
+                kg=kg_interface,
+                llm=llm,
+                N=cfg.reknos.width,
+                L=cfg.reknos.depth,
+                use_stop_check=cfg.reknos.use_stop_check,
+            )
+            logger.info(
+                "ReKnoS initialised (N=%d, L=%d, stop_check=%s)",
+                cfg.reknos.width,
+                cfg.reknos.depth,
+                cfg.reknos.use_stop_check,
+            )
+        except Exception:
+            logger.exception("Failed to initialise ReKnoS — continuing without it")
+
+    engine = MatchEngine(driver, reknos_finder=reknos_finder)
     explainer = MatchExplainer(llm, entity_linker=linker)
 
     app.state.driver = driver

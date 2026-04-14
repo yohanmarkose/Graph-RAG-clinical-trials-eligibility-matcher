@@ -51,6 +51,15 @@ SNOMED_CONCEPTS = [
     {"concept_id": "372244006", "term": "Melanoma", "semantic_tag": "disorder"},
     {"concept_id": "93143009",  "term": "Leukemia", "semantic_tag": "disorder"},
     {"concept_id": "399068003", "term": "Prostate cancer", "semantic_tag": "disorder"},
+    # NEW — expanded oncology
+    {"concept_id": "363443007", "term": "Ovarian cancer", "semantic_tag": "disorder"},
+    {"concept_id": "372003004", "term": "Pancreatic cancer", "semantic_tag": "disorder"},
+    {"concept_id": "41607009",  "term": "Renal cell carcinoma", "semantic_tag": "disorder"},
+    {"concept_id": "393563007", "term": "Glioblastoma", "semantic_tag": "disorder"},
+    {"concept_id": "93144003",  "term": "Bladder cancer", "semantic_tag": "disorder"},
+    {"concept_id": "371973000", "term": "Endometrial cancer", "semantic_tag": "disorder"},
+    {"concept_id": "420620002", "term": "Head and neck squamous cell carcinoma", "semantic_tag": "disorder"},
+    {"concept_id": "92814006",  "term": "Chronic lymphocytic leukemia", "semantic_tag": "disorder"},
     # Cardiology
     {"concept_id": "84114007",  "term": "Heart failure", "semantic_tag": "disorder"},
     {"concept_id": "49436004",  "term": "Atrial fibrillation", "semantic_tag": "disorder"},
@@ -78,6 +87,15 @@ SNOMED_IS_A = [
     ("372244006", "363346000"),  # Melanoma IS_A Malignant neoplasm
     ("93143009",  "363346000"),  # Leukemia IS_A Malignant neoplasm
     ("399068003", "363346000"),  # Prostate cancer IS_A Malignant neoplasm
+    # NEW
+    ("363443007", "363346000"),  # Ovarian cancer IS_A Malignant neoplasm
+    ("372003004", "363346000"),  # Pancreatic cancer IS_A Malignant neoplasm
+    ("41607009",  "363346000"),  # Renal cell carcinoma IS_A Malignant neoplasm
+    ("393563007", "363346000"),  # Glioblastoma IS_A Malignant neoplasm
+    ("93144003",  "363346000"),  # Bladder cancer IS_A Malignant neoplasm
+    ("371973000", "363346000"),  # Endometrial cancer IS_A Malignant neoplasm
+    ("420620002", "363346000"),  # HNSCC IS_A Malignant neoplasm
+    ("92814006",  "93143009"),   # CLL IS_A Leukemia
 ]
 
 # ---------------------------------------------------------------------------
@@ -100,6 +118,22 @@ RXNORM_CONCEPTS = [
     {"rxcui": "1860477",  "name": "osimertinib",                  "tty": "IN"},
     {"rxcui": "41493",    "name": "tamoxifen",                    "tty": "IN"},
     {"rxcui": "72251",    "name": "letrozole",                    "tty": "IN"},
+    # NEW
+    {"rxcui": "38786",    "name": "carboplatin",                  "tty": "IN"},
+    {"rxcui": "51267",    "name": "gemcitabine",                  "tty": "IN"},
+    {"rxcui": "343072",   "name": "pemetrexed",                   "tty": "IN"},
+    {"rxcui": "194000",   "name": "capecitabine",                 "tty": "IN"},
+    {"rxcui": "1873984",  "name": "palbociclib",                  "tty": "IN"},
+    {"rxcui": "1859145",  "name": "ribociclib",                   "tty": "IN"},
+    {"rxcui": "203239",   "name": "fulvestrant",                  "tty": "IN"},
+    {"rxcui": "1860490",  "name": "dabrafenib",                   "tty": "IN"},
+    {"rxcui": "1733984",  "name": "trametinib",                   "tty": "IN"},
+    {"rxcui": "406222",   "name": "sunitinib",                    "tty": "IN"},
+    {"rxcui": "1454898",  "name": "ibrutinib",                    "tty": "IN"},
+    {"rxcui": "1860484",  "name": "niraparib",                    "tty": "IN"},
+    {"rxcui": "1908197",  "name": "durvalumab",                   "tty": "IN"},
+    {"rxcui": "2390663",  "name": "sacituzumab govitecan",        "tty": "IN"},
+    {"rxcui": "2390001",  "name": "dostarlimab",                  "tty": "IN"},
 ]
 
 # RxNorm relationships  (source_rxcui, rel, target_rxcui)
@@ -111,7 +145,11 @@ RXNORM_RELS = [
 # Biomarker nodes
 # ---------------------------------------------------------------------------
 
-BIOMARKERS = ["HER2", "EGFR", "PD-L1", "BRCA1", "BRCA2", "ER", "PR", "ALK", "KRAS"]
+BIOMARKERS = [
+    "HER2", "EGFR", "PD-L1", "BRCA1", "BRCA2", "ER", "PR", "ALK", "KRAS",
+    # NEW
+    "BRAF", "PIK3CA", "TMB", "TROP2", "RET", "MET", "FGFR", "MSI-H", "NTRK", "AMYLOID",
+]
 
 # ---------------------------------------------------------------------------
 # Trial data  — 30 entries
@@ -980,6 +1018,709 @@ TRIALS = [
         "conditions": ["44054006"],   # demo parent
         "interventions": [{"name": "dupilumab", "type": "Biological"}],
         "inclusion_criteria": [],
+        "exclusion_criteria": [],
+    },
+
+    # ================================================================== #
+    #  NEW TRIALS (NCT00000031–NCT00000050)                              #
+    # ================================================================== #
+
+    # ------------------------------------------------------------------ #
+    #  GROUP A — TUMOR-AGNOSTIC (no condition → only findable via        #
+    #  biomarker path; baseline traversal is completely blind to these)  #
+    # ------------------------------------------------------------------ #
+    {
+        "nct_id": "NCT00000031",
+        "title": "Pembrolizumab in TMB-High Solid Tumors (Tumor Agnostic)",
+        "status": "RECRUITING",
+        "phase": "Phase 2",
+        "sponsor": "Merck",
+        "enrollment": 233,
+        "min_age": 18,
+        "max_age": None,
+        "gender": "All",
+        "therapeutic_area": "oncology",
+        "url": "https://clinicaltrials.gov/study/NCT00000031",
+        "brief_summary": (
+            "Tissue-agnostic pembrolizumab for solid tumors with high tumor mutational burden "
+            "(TMB ≥10 mut/Mb). No restriction on primary tumor site."
+        ),
+        # No conditions — this is purely biomarker-driven.
+        # Baseline will NEVER surface this trial.
+        # ReKnoS finds it via: TMB biomarker → biomarker_match → criterion_to_trial
+        "conditions": [],
+        "interventions": [{"name": "pembrolizumab", "type": "Biological"}],
+        "inclusion_criteria": [
+            {
+                "raw_text": "TMB ≥10 mutations per megabase (any solid tumor)",
+                "category": "biomarker",
+                "requires_biomarkers": [{"name": "TMB", "status": "positive"}],
+            },
+        ],
+        "exclusion_criteria": [],
+    },
+    {
+        "nct_id": "NCT00000032",
+        "title": "Dostarlimab in MSI-H / dMMR Pan-Cancer",
+        "status": "RECRUITING",
+        "phase": "Phase 2",
+        "sponsor": "GlaxoSmithKline",
+        "enrollment": 209,
+        "min_age": 18,
+        "max_age": None,
+        "gender": "All",
+        "therapeutic_area": "oncology",
+        "url": "https://clinicaltrials.gov/study/NCT00000032",
+        "brief_summary": (
+            "Anti-PD-1 dostarlimab in microsatellite instability-high (MSI-H) or "
+            "mismatch repair-deficient (dMMR) advanced solid tumors regardless of histology."
+        ),
+        # Tumor agnostic — only findable via MSI-H biomarker path.
+        # Especially useful for colorectal cancer patients with MSI-H.
+        "conditions": [],
+        "interventions": [{"name": "dostarlimab", "type": "Biological"}],
+        "inclusion_criteria": [
+            {
+                "raw_text": "MSI-H or dMMR confirmed by IHC or PCR",
+                "category": "biomarker",
+                "requires_biomarkers": [{"name": "MSI-H", "status": "positive"}],
+            },
+        ],
+        "exclusion_criteria": [],
+    },
+    {
+        "nct_id": "NCT00000033",
+        "title": "Larotrectinib in NTRK Fusion-Positive Solid Tumors",
+        "status": "RECRUITING",
+        "phase": "Phase 2",
+        "sponsor": "Bayer",
+        "enrollment": 159,
+        "min_age": 12,
+        "max_age": None,
+        "gender": "All",
+        "therapeutic_area": "oncology",
+        "url": "https://clinicaltrials.gov/study/NCT00000033",
+        "brief_summary": (
+            "TRK inhibitor larotrectinib in solid tumors harbouring NTRK1/2/3 gene fusions, "
+            "irrespective of histology or primary site."
+        ),
+        # Tumor agnostic — NTRK fusion is the only gate.
+        "conditions": [],
+        "interventions": [{"name": "larotrectinib", "type": "Drug"}],
+        "inclusion_criteria": [
+            {
+                "raw_text": "NTRK gene fusion detected by NGS or FISH",
+                "category": "biomarker",
+                "requires_biomarkers": [{"name": "NTRK", "status": "positive"}],
+            },
+        ],
+        "exclusion_criteria": [],
+    },
+
+    # ------------------------------------------------------------------ #
+    #  GROUP B — SIBLING CONDITION DISCOVERY                              #
+    #  Trial registered under a sibling SNOMED node; baseline misses it, #
+    #  ReKnoS finds it via the biomarker or therapy path.                 #
+    # ------------------------------------------------------------------ #
+    {
+        "nct_id": "NCT00000034",
+        "title": "Ribociclib + Fulvestrant in HR+ HER2- Metastatic Breast Cancer",
+        "status": "RECRUITING",
+        "phase": "Phase 3",
+        "sponsor": "Novartis",
+        "enrollment": 726,
+        "min_age": 18,
+        "max_age": None,
+        "gender": "Female",
+        "therapeutic_area": "oncology",
+        "url": "https://clinicaltrials.gov/study/NCT00000034",
+        "brief_summary": (
+            "CDK4/6 inhibitor ribociclib plus fulvestrant in pre/postmenopausal women "
+            "with HR-positive, HER2-negative advanced breast cancer."
+        ),
+        # Registered under Metastatic breast cancer (408643008).
+        # Patient with ER+ breast cancer (396533008) — a sibling — finds this
+        # via the ER=positive biomarker path. Baseline misses it.
+        "conditions": ["408643008"],
+        "interventions": [
+            {"name": "ribociclib",   "type": "Drug"},
+            {"name": "fulvestrant",  "type": "Drug"},
+        ],
+        "inclusion_criteria": [
+            {
+                "raw_text": "HR-positive (ER+ and/or PR+), HER2-negative advanced breast cancer",
+                "category": "condition",
+                "requires_conditions": ["408643008"],
+            },
+            {
+                "raw_text": "ER-positive tumour (≥1% staining)",
+                "category": "biomarker",
+                "requires_biomarkers": [{"name": "ER", "status": "positive"}],
+            },
+            {
+                "raw_text": "HER2-negative confirmed",
+                "category": "biomarker",
+                "requires_biomarkers": [{"name": "HER2", "status": "negative"}],
+            },
+        ],
+        "exclusion_criteria": [
+            {
+                "raw_text": "Prior CDK4/6 inhibitor therapy",
+                "category": "prior_therapy",
+                "excludes_prior_drugs": ["1873984", "1859145"],  # palbociclib, ribociclib
+            },
+        ],
+    },
+    {
+        "nct_id": "NCT00000035",
+        "title": "Sacituzumab Govitecan in TROP2-Positive Triple-Negative Breast Cancer",
+        "status": "RECRUITING",
+        "phase": "Phase 3",
+        "sponsor": "Gilead",
+        "enrollment": 468,
+        "min_age": 18,
+        "max_age": None,
+        "gender": "Female",
+        "therapeutic_area": "oncology",
+        "url": "https://clinicaltrials.gov/study/NCT00000035",
+        "brief_summary": (
+            "ADC sacituzumab govitecan vs chemotherapy in relapsed/refractory "
+            "TROP2-expressing triple-negative breast cancer."
+        ),
+        # TNBC (31509003) is a sibling of HER2+ (427685000) and ER+ (396533008).
+        # A patient with plain Breast cancer + TROP2+ finds this via biomarker path.
+        "conditions": ["31509003"],
+        "interventions": [{"name": "sacituzumab govitecan", "type": "Drug"}],
+        "inclusion_criteria": [
+            {
+                "raw_text": "Triple-negative breast cancer (ER-, PR-, HER2-)",
+                "category": "condition",
+                "requires_conditions": ["31509003"],
+            },
+            {
+                "raw_text": "TROP2 expression by IHC",
+                "category": "biomarker",
+                "requires_biomarkers": [{"name": "TROP2", "status": "positive"}],
+            },
+        ],
+        "exclusion_criteria": [
+            {
+                "raw_text": "HER2-positive disease",
+                "category": "biomarker",
+                "excludes_biomarkers": [{"name": "HER2", "status": "positive"}],
+            },
+        ],
+    },
+    {
+        "nct_id": "NCT00000036",
+        "title": "Alpelisib + Fulvestrant in PIK3CA-Mutated HR+ HER2- Breast Cancer",
+        "status": "RECRUITING",
+        "phase": "Phase 3",
+        "sponsor": "Novartis",
+        "enrollment": 572,
+        "min_age": 18,
+        "max_age": None,
+        "gender": "All",
+        "therapeutic_area": "oncology",
+        "url": "https://clinicaltrials.gov/study/NCT00000036",
+        "brief_summary": (
+            "PI3K inhibitor alpelisib plus fulvestrant in PIK3CA-mutated, HR+/HER2- "
+            "advanced breast cancer after CDK4/6 inhibitor progression."
+        ),
+        # Registered under Metastatic breast cancer.
+        # Patient with ER+ breast cancer + PIK3CA+ + prior palbociclib finds this
+        # via therapy path AND biomarker path — neither start from 408643008.
+        "conditions": ["408643008"],
+        "interventions": [
+            {"name": "alpelisib",   "type": "Drug"},
+            {"name": "fulvestrant", "type": "Drug"},
+        ],
+        "inclusion_criteria": [
+            {
+                "raw_text": "PIK3CA mutation detected in tumour or blood",
+                "category": "biomarker",
+                "requires_biomarkers": [{"name": "PIK3CA", "status": "positive"}],
+            },
+            {
+                "raw_text": "ER-positive tumour",
+                "category": "biomarker",
+                "requires_biomarkers": [{"name": "ER", "status": "positive"}],
+            },
+            {
+                "raw_text": "Prior CDK4/6 inhibitor (palbociclib or ribociclib)",
+                "category": "prior_therapy",
+                "requires_prior_drugs": ["1873984"],  # palbociclib
+            },
+        ],
+        "exclusion_criteria": [
+            {
+                "raw_text": "HER2-positive disease",
+                "category": "biomarker",
+                "excludes_biomarkers": [{"name": "HER2", "status": "positive"}],
+            },
+        ],
+    },
+
+    # ------------------------------------------------------------------ #
+    #  GROUP C — THERAPY-LED DISCOVERY                                    #
+    #  Prior therapy criterion is the only path from this patient.       #
+    # ------------------------------------------------------------------ #
+    {
+        "nct_id": "NCT00000037",
+        "title": "Niraparib Maintenance in Platinum-Sensitive Ovarian Cancer",
+        "status": "RECRUITING",
+        "phase": "Phase 3",
+        "sponsor": "Janssen",
+        "enrollment": 553,
+        "min_age": 18,
+        "max_age": None,
+        "gender": "Female",
+        "therapeutic_area": "oncology",
+        "url": "https://clinicaltrials.gov/study/NCT00000037",
+        "brief_summary": (
+            "PARP inhibitor niraparib maintenance after platinum-based chemotherapy "
+            "response in recurrent ovarian cancer."
+        ),
+        # Patient with ovarian cancer (363443007) + prior carboplatin (38786)
+        # is found via the therapy path: carboplatin → REQUIRES_PRIOR_DRUG criterion → trial
+        "conditions": ["363443007"],
+        "interventions": [{"name": "niraparib", "type": "Drug"}],
+        "inclusion_criteria": [
+            {
+                "raw_text": "Recurrent ovarian cancer with complete or partial response to platinum",
+                "category": "condition",
+                "requires_conditions": ["363443007"],
+            },
+            {
+                "raw_text": "Prior platinum-based chemotherapy (carboplatin or cisplatin)",
+                "category": "prior_therapy",
+                "requires_prior_drugs": ["38786"],  # carboplatin
+            },
+        ],
+        "exclusion_criteria": [
+            {
+                "raw_text": "Prior PARP inhibitor treatment",
+                "category": "prior_therapy",
+                "excludes_prior_drugs": ["1860484", "1597582"],  # niraparib, olaparib
+            },
+        ],
+    },
+    {
+        "nct_id": "NCT00000038",
+        "title": "Durvalumab Consolidation After Chemoradiation in Stage III NSCLC",
+        "status": "RECRUITING",
+        "phase": "Phase 3",
+        "sponsor": "AstraZeneca",
+        "enrollment": 713,
+        "min_age": 18,
+        "max_age": None,
+        "gender": "All",
+        "therapeutic_area": "oncology",
+        "url": "https://clinicaltrials.gov/study/NCT00000038",
+        "brief_summary": (
+            "Anti-PD-L1 durvalumab consolidation in unresectable Stage III NSCLC "
+            "without progression after platinum-based chemoradiation."
+        ),
+        # Patient with NSCLC + prior carboplatin (platinum-based chemo):
+        # therapy path → carboplatin criterion → this trial
+        "conditions": ["254637007"],
+        "interventions": [{"name": "durvalumab", "type": "Biological"}],
+        "inclusion_criteria": [
+            {
+                "raw_text": "Unresectable Stage III NSCLC",
+                "category": "condition",
+                "requires_conditions": ["254637007"],
+            },
+            {
+                "raw_text": "Prior platinum-based concurrent chemoradiation",
+                "category": "prior_therapy",
+                "requires_prior_drugs": ["38786"],  # carboplatin
+            },
+        ],
+        "exclusion_criteria": [
+            {
+                "raw_text": "EGFR sensitizing mutation or ALK rearrangement",
+                "category": "biomarker",
+                "excludes_biomarkers": [
+                    {"name": "EGFR", "status": "positive"},
+                    {"name": "ALK",  "status": "positive"},
+                ],
+            },
+        ],
+    },
+    {
+        "nct_id": "NCT00000039",
+        "title": "Osimertinib in T790M EGFR-Mutant NSCLC After First-Gen TKI",
+        "status": "RECRUITING",
+        "phase": "Phase 3",
+        "sponsor": "AstraZeneca",
+        "enrollment": 419,
+        "min_age": 18,
+        "max_age": None,
+        "gender": "All",
+        "therapeutic_area": "oncology",
+        "url": "https://clinicaltrials.gov/study/NCT00000039",
+        "brief_summary": (
+            "Third-generation EGFR-TKI osimertinib in T790M-mutant NSCLC after "
+            "progression on erlotinib or gefitinib."
+        ),
+        # Patient with NSCLC + EGFR+ + prior erlotinib:
+        # both therapy path (erlotinib → criterion) and biomarker path (EGFR → criterion) lead here
+        "conditions": ["254637007"],
+        "interventions": [{"name": "osimertinib", "type": "Drug"}],
+        "inclusion_criteria": [
+            {
+                "raw_text": "EGFR T790M mutation after first-gen TKI progression",
+                "category": "biomarker",
+                "requires_biomarkers": [{"name": "EGFR", "status": "positive"}],
+            },
+            {
+                "raw_text": "Prior erlotinib or gefitinib therapy",
+                "category": "prior_therapy",
+                "requires_prior_drugs": ["352962", "352707"],  # erlotinib, gefitinib
+            },
+        ],
+        "exclusion_criteria": [
+            {
+                "raw_text": "Prior osimertinib or third-gen EGFR-TKI",
+                "category": "prior_therapy",
+                "excludes_prior_drugs": ["1860477"],
+            },
+        ],
+    },
+
+    # ------------------------------------------------------------------ #
+    #  GROUP D — NEW DISEASE AREAS + BIOMARKER DIVERSITY                 #
+    # ------------------------------------------------------------------ #
+    {
+        "nct_id": "NCT00000040",
+        "title": "Dabrafenib + Trametinib in BRAF V600E-Mutant Melanoma",
+        "status": "RECRUITING",
+        "phase": "Phase 3",
+        "sponsor": "Novartis",
+        "enrollment": 704,
+        "min_age": 18,
+        "max_age": None,
+        "gender": "All",
+        "therapeutic_area": "oncology",
+        "url": "https://clinicaltrials.gov/study/NCT00000040",
+        "brief_summary": "Combined BRAF + MEK inhibition in BRAF V600E-mutant unresectable melanoma.",
+        "conditions": ["372244006"],
+        "interventions": [
+            {"name": "dabrafenib",  "type": "Drug"},
+            {"name": "trametinib", "type": "Drug"},
+        ],
+        "inclusion_criteria": [
+            {
+                "raw_text": "Unresectable or metastatic melanoma",
+                "category": "condition",
+                "requires_conditions": ["372244006"],
+            },
+            {
+                "raw_text": "BRAF V600E or V600K mutation confirmed",
+                "category": "biomarker",
+                "requires_biomarkers": [{"name": "BRAF", "status": "positive"}],
+            },
+        ],
+        "exclusion_criteria": [
+            {
+                "raw_text": "Prior BRAF or MEK inhibitor therapy",
+                "category": "prior_therapy",
+                "excludes_prior_drugs": ["1860490", "1733984"],  # dabrafenib, trametinib
+            },
+        ],
+    },
+    {
+        "nct_id": "NCT00000041",
+        "title": "Selpercatinib in RET-Rearranged Advanced NSCLC",
+        "status": "RECRUITING",
+        "phase": "Phase 2",
+        "sponsor": "Eli Lilly",
+        "enrollment": 247,
+        "min_age": 18,
+        "max_age": None,
+        "gender": "All",
+        "therapeutic_area": "oncology",
+        "url": "https://clinicaltrials.gov/study/NCT00000041",
+        "brief_summary": "Selective RET inhibitor selpercatinib in RET fusion-positive NSCLC.",
+        "conditions": ["254637007"],
+        "interventions": [{"name": "selpercatinib", "type": "Drug"}],
+        "inclusion_criteria": [
+            {
+                "raw_text": "RET fusion detected by NGS",
+                "category": "biomarker",
+                "requires_biomarkers": [{"name": "RET", "status": "positive"}],
+            },
+        ],
+        "exclusion_criteria": [],
+    },
+    {
+        "nct_id": "NCT00000042",
+        "title": "Capmatinib in MET Exon 14 Skipping NSCLC",
+        "status": "RECRUITING",
+        "phase": "Phase 2",
+        "sponsor": "Novartis",
+        "enrollment": 364,
+        "min_age": 18,
+        "max_age": None,
+        "gender": "All",
+        "therapeutic_area": "oncology",
+        "url": "https://clinicaltrials.gov/study/NCT00000042",
+        "brief_summary": "MET inhibitor capmatinib in MET exon 14 skipping mutation NSCLC.",
+        "conditions": ["254637007"],
+        "interventions": [{"name": "capmatinib", "type": "Drug"}],
+        "inclusion_criteria": [
+            {
+                "raw_text": "MET exon 14 skipping mutation by NGS",
+                "category": "biomarker",
+                "requires_biomarkers": [{"name": "MET", "status": "positive"}],
+            },
+        ],
+        "exclusion_criteria": [],
+    },
+    {
+        "nct_id": "NCT00000043",
+        "title": "Erdafitinib in FGFR-Altered Bladder Cancer",
+        "status": "RECRUITING",
+        "phase": "Phase 2",
+        "sponsor": "Janssen",
+        "enrollment": 99,
+        "min_age": 18,
+        "max_age": None,
+        "gender": "All",
+        "therapeutic_area": "oncology",
+        "url": "https://clinicaltrials.gov/study/NCT00000043",
+        "brief_summary": "Pan-FGFR inhibitor erdafitinib in FGFR-altered locally advanced/metastatic urothelial carcinoma.",
+        "conditions": ["93144003"],   # Bladder cancer (new)
+        "interventions": [{"name": "erdafitinib", "type": "Drug"}],
+        "inclusion_criteria": [
+            {
+                "raw_text": "Locally advanced or metastatic bladder/urothelial carcinoma",
+                "category": "condition",
+                "requires_conditions": ["93144003"],
+            },
+            {
+                "raw_text": "FGFR2 or FGFR3 mutation or fusion",
+                "category": "biomarker",
+                "requires_biomarkers": [{"name": "FGFR", "status": "positive"}],
+            },
+            {
+                "raw_text": "Prior platinum-based chemotherapy",
+                "category": "prior_therapy",
+                "requires_prior_drugs": ["38786"],  # carboplatin
+            },
+        ],
+        "exclusion_criteria": [],
+    },
+    {
+        "nct_id": "NCT00000044",
+        "title": "Sunitinib in First-Line Metastatic Renal Cell Carcinoma",
+        "status": "RECRUITING",
+        "phase": "Phase 3",
+        "sponsor": "Pfizer",
+        "enrollment": 750,
+        "min_age": 18,
+        "max_age": None,
+        "gender": "All",
+        "therapeutic_area": "oncology",
+        "url": "https://clinicaltrials.gov/study/NCT00000044",
+        "brief_summary": "Sunitinib vs interferon-alpha in previously untreated metastatic clear-cell RCC.",
+        "conditions": ["41607009"],   # Renal cell carcinoma (new)
+        "interventions": [{"name": "sunitinib", "type": "Drug"}],
+        "inclusion_criteria": [
+            {
+                "raw_text": "Histologically confirmed clear-cell metastatic RCC",
+                "category": "condition",
+                "requires_conditions": ["41607009"],
+            },
+        ],
+        "exclusion_criteria": [],
+    },
+    {
+        "nct_id": "NCT00000045",
+        "title": "Temozolomide + Radiation Therapy in Newly Diagnosed Glioblastoma",
+        "status": "RECRUITING",
+        "phase": "Phase 3",
+        "sponsor": "NCI",
+        "enrollment": 573,
+        "min_age": 18,
+        "max_age": 70,
+        "gender": "All",
+        "therapeutic_area": "neurology",
+        "url": "https://clinicaltrials.gov/study/NCT00000045",
+        "brief_summary": "Standard temozolomide concurrent and adjuvant to radiotherapy in GBM.",
+        "conditions": ["393563007"],   # Glioblastoma (new)
+        "interventions": [{"name": "temozolomide", "type": "Drug"}],
+        "inclusion_criteria": [
+            {
+                "raw_text": "Newly diagnosed glioblastoma (WHO Grade IV)",
+                "category": "condition",
+                "requires_conditions": ["393563007"],
+            },
+        ],
+        "exclusion_criteria": [],
+    },
+    {
+        "nct_id": "NCT00000046",
+        "title": "Ibrutinib in Relapsed/Refractory Chronic Lymphocytic Leukemia",
+        "status": "RECRUITING",
+        "phase": "Phase 3",
+        "sponsor": "AbbVie",
+        "enrollment": 391,
+        "min_age": 18,
+        "max_age": None,
+        "gender": "All",
+        "therapeutic_area": "oncology",
+        "url": "https://clinicaltrials.gov/study/NCT00000046",
+        "brief_summary": "BTK inhibitor ibrutinib vs ofatumumab in relapsed/refractory CLL.",
+        # CLL (92814006) IS_A Leukemia (93143009).
+        # Patient with generic Leukemia (93143009): baseline misses this because it
+        # walks UP from 93143009, but criterion requires 92814006 (a child).
+        # ReKnoS snomed_specialize path finds 92814006 from 93143009,
+        # then condition_match links to this trial's criterion.
+        "conditions": ["92814006"],
+        "interventions": [{"name": "ibrutinib", "type": "Drug"}],
+        "inclusion_criteria": [
+            {
+                "raw_text": "Relapsed or refractory CLL requiring treatment",
+                "category": "condition",
+                "requires_conditions": ["92814006"],
+            },
+        ],
+        "exclusion_criteria": [],
+    },
+    {
+        "nct_id": "NCT00000047",
+        "title": "Gemcitabine + Nab-Paclitaxel in Metastatic Pancreatic Cancer",
+        "status": "RECRUITING",
+        "phase": "Phase 3",
+        "sponsor": "Celgene",
+        "enrollment": 861,
+        "min_age": 18,
+        "max_age": None,
+        "gender": "All",
+        "therapeutic_area": "oncology",
+        "url": "https://clinicaltrials.gov/study/NCT00000047",
+        "brief_summary": "Gemcitabine + nab-paclitaxel vs gemcitabine alone in metastatic pancreatic adenocarcinoma.",
+        "conditions": ["372003004"],   # Pancreatic cancer (new)
+        "interventions": [
+            {"name": "gemcitabine",  "type": "Drug"},
+        ],
+        "inclusion_criteria": [
+            {
+                "raw_text": "Histologically confirmed metastatic pancreatic adenocarcinoma",
+                "category": "condition",
+                "requires_conditions": ["372003004"],
+            },
+        ],
+        "exclusion_criteria": [],
+    },
+    {
+        "nct_id": "NCT00000048",
+        "title": "Pembrolizumab in PD-L1-Positive Head and Neck SCC",
+        "status": "RECRUITING",
+        "phase": "Phase 3",
+        "sponsor": "Merck",
+        "enrollment": 882,
+        "min_age": 18,
+        "max_age": None,
+        "gender": "All",
+        "therapeutic_area": "oncology",
+        "url": "https://clinicaltrials.gov/study/NCT00000048",
+        "brief_summary": "First-line pembrolizumab ± chemotherapy in PD-L1+ recurrent/metastatic HNSCC.",
+        "conditions": ["420620002"],   # HNSCC (new)
+        "interventions": [{"name": "pembrolizumab", "type": "Biological"}],
+        "inclusion_criteria": [
+            {
+                "raw_text": "Recurrent or metastatic HNSCC",
+                "category": "condition",
+                "requires_conditions": ["420620002"],
+            },
+            {
+                "raw_text": "PD-L1 CPS ≥1",
+                "category": "biomarker",
+                "requires_biomarkers": [{"name": "PD-L1", "status": "positive"}],
+            },
+        ],
+        "exclusion_criteria": [],
+    },
+    {
+        "nct_id": "NCT00000049",
+        "title": "Olaparib + Bevacizumab Maintenance in BRCA1/2 Ovarian Cancer",
+        "status": "RECRUITING",
+        "phase": "Phase 3",
+        "sponsor": "AstraZeneca",
+        "enrollment": 806,
+        "min_age": 18,
+        "max_age": None,
+        "gender": "Female",
+        "therapeutic_area": "oncology",
+        "url": "https://clinicaltrials.gov/study/NCT00000049",
+        "brief_summary": (
+            "PARP inhibitor olaparib combined with bevacizumab as maintenance therapy "
+            "in newly diagnosed BRCA-mutated advanced ovarian cancer after platinum response."
+        ),
+        # Patient with ovarian cancer + BRCA1+ + prior carboplatin:
+        # finds this via BOTH biomarker path (BRCA1) AND therapy path (carboplatin)
+        "conditions": ["363443007"],
+        "interventions": [{"name": "olaparib", "type": "Drug"}],
+        "inclusion_criteria": [
+            {
+                "raw_text": "Advanced ovarian cancer with germline or somatic BRCA1/2 mutation",
+                "category": "biomarker",
+                "requires_biomarkers": [{"name": "BRCA1", "status": "positive"}],
+            },
+            {
+                "raw_text": "Prior platinum-based chemotherapy with complete or partial response",
+                "category": "prior_therapy",
+                "requires_prior_drugs": ["38786"],  # carboplatin
+            },
+        ],
+        "exclusion_criteria": [
+            {
+                "raw_text": "Prior PARP inhibitor treatment",
+                "category": "prior_therapy",
+                "excludes_prior_drugs": ["1597582", "1860484"],  # olaparib, niraparib
+            },
+        ],
+    },
+    {
+        "nct_id": "NCT00000050",
+        "title": "Dostarlimab in MSI-H Endometrial Cancer (Post-Platinum)",
+        "status": "RECRUITING",
+        "phase": "Phase 3",
+        "sponsor": "GlaxoSmithKline",
+        "enrollment": 494,
+        "min_age": 18,
+        "max_age": None,
+        "gender": "Female",
+        "therapeutic_area": "oncology",
+        "url": "https://clinicaltrials.gov/study/NCT00000050",
+        "brief_summary": (
+            "Anti-PD-1 dostarlimab in MSI-H/dMMR recurrent or advanced endometrial cancer "
+            "after prior platinum-based chemotherapy."
+        ),
+        # Patient with endometrial cancer + MSI-H + prior carboplatin:
+        # biomarker path (MSI-H) AND therapy path (carboplatin) both lead here
+        "conditions": ["371973000"],   # Endometrial cancer (new)
+        "interventions": [{"name": "dostarlimab", "type": "Biological"}],
+        "inclusion_criteria": [
+            {
+                "raw_text": "MSI-H or dMMR endometrial cancer",
+                "category": "condition",
+                "requires_conditions": ["371973000"],
+            },
+            {
+                "raw_text": "MSI-H confirmed by IHC or PCR",
+                "category": "biomarker",
+                "requires_biomarkers": [{"name": "MSI-H", "status": "positive"}],
+            },
+            {
+                "raw_text": "Prior platinum-based chemotherapy",
+                "category": "prior_therapy",
+                "requires_prior_drugs": ["38786"],  # carboplatin
+            },
+        ],
         "exclusion_criteria": [],
     },
 ]
