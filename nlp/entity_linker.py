@@ -110,32 +110,35 @@ class EntityLinker:
         # Step 1 — exact match
         if normalised in self._snomed:
             entry = self._snomed[normalised]
+            concept_id = entry[0] if isinstance(entry, list) else entry.get("concept_id", "")
             return [
                 {
-                    "concept_id": entry.get("concept_id", ""),
-                    "term": entry.get("term", normalised),
+                    "concept_id": concept_id,
+                    "term": normalised,
                     "score": 100.0,
                     "method": "exact",
                 }
             ]
 
         # Step 2 — fuzzy match
-        fuzzy_hits = fuzz_process.extractBests(
+        fuzzy_hits = fuzz_process.extract(
             normalised,
             self._snomed_terms,
             scorer=fuzz.WRatio,
             score_cutoff=threshold,
             limit=3,
         )
-        return [
-            {
-                "concept_id": self._snomed[term].get("concept_id", ""),
-                "term": self._snomed[term].get("term", term),
+        results = []
+        for term, score, _ in fuzzy_hits:
+            entry = self._snomed[term]
+            concept_id = entry[0] if isinstance(entry, list) else entry.get("concept_id", "")
+            results.append({
+                "concept_id": concept_id,
+                "term": term,
                 "score": float(score),
                 "method": "fuzzy",
-            }
-            for term, score, _ in fuzzy_hits
-        ]
+            })
+        return results
 
     def link_drug_to_rxnorm(
         self,
@@ -154,32 +157,35 @@ class EntityLinker:
         # Step 1 — exact match
         if normalised in self._rxnorm:
             entry = self._rxnorm[normalised]
+            rxcui = entry[0] if isinstance(entry, list) else entry.get("rxcui", "")
             return [
                 {
-                    "rxcui": entry.get("rxcui", ""),
-                    "name": entry.get("name", normalised),
+                    "rxcui": rxcui,
+                    "name": normalised,
                     "score": 100.0,
                     "method": "exact",
                 }
             ]
 
         # Step 2 — fuzzy match
-        fuzzy_hits = fuzz_process.extractBests(
+        fuzzy_hits = fuzz_process.extract(
             normalised,
             self._rxnorm_terms,
             scorer=fuzz.WRatio,
             score_cutoff=threshold,
             limit=3,
         )
-        return [
-            {
-                "rxcui": self._rxnorm[term].get("rxcui", ""),
-                "name": self._rxnorm[term].get("name", term),
+        results = []
+        for term, score, _ in fuzzy_hits:
+            entry = self._rxnorm[term]
+            rxcui = entry[0] if isinstance(entry, list) else entry.get("rxcui", "")
+            results.append({
+                "rxcui": rxcui,
+                "name": term,
                 "score": float(score),
                 "method": "fuzzy",
-            }
-            for term, score, _ in fuzzy_hits
-        ]
+            })
+        return results
 
     # ------------------------------------------------------------------
     # LLM fallback

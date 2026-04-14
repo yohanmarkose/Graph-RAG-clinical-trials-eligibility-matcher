@@ -20,6 +20,7 @@ dist/
 # Data files (large, gitignored)
 data/snomed/*
 data/rxnorm/*
+data/processed/*
 data/raw/*.json
 !data/snomed/.gitkeep
 !data/rxnorm/.gitkeep
