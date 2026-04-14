@@ -1,4 +1,3 @@
-from llm.explainer import MatchExplainer
 from llm.provider import AnthropicProvider, CachedLLMProvider, LLMProvider, OpenAIProvider, get_llm_provider
 
 __all__ = [
@@ -7,5 +6,4 @@ __all__ = [
     "AnthropicProvider",
     "CachedLLMProvider",
     "get_llm_provider",
-    "MatchExplainer",
 ]

@@ -36,6 +36,7 @@ _INDEX_STATEMENTS = [
     "CREATE CONSTRAINT rxnorm_id IF NOT EXISTS FOR (r:RxNormConcept) REQUIRE r.rxcui IS UNIQUE",
     "CREATE INDEX condition_name IF NOT EXISTS FOR (c:Condition) ON (c.normalized_name)",
     "CREATE INDEX intervention_name IF NOT EXISTS FOR (i:Intervention) ON (i.normalized_name)",
+    "CREATE CONSTRAINT criterion_id IF NOT EXISTS FOR (cr:Criterion) REQUIRE cr.id IS UNIQUE",
     "CREATE INDEX criterion_type IF NOT EXISTS FOR (cr:Criterion) ON (cr.type)",
     "CREATE INDEX criterion_parsing_status IF NOT EXISTS FOR (cr:Criterion) ON (cr.parsing_status)",
     "CREATE INDEX biomarker_name IF NOT EXISTS FOR (b:Biomarker) ON (b.normalized_name)",

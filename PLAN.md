@@ -1691,7 +1691,7 @@ Create `scripts/run_pipeline.py`:
   ```
 - Steps for --demo: check Neo4j → seed data → run tests → start API
 - Steps for --full: check Neo4j + Snowflake → fetch trials → parse SNOMED/RxNorm → load Snowflake → transform → export → load Neo4j → parse criteria → link entities → run tests → start API
-```
+
 
 ---
 

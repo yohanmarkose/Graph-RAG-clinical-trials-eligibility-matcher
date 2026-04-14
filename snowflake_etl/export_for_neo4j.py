@@ -157,21 +157,34 @@ def export_criteria(
     conn,
     therapeutic_area: str | None,
     output_dir: str | Path,
+    parsed_only: bool = False,
 ) -> int:
     """
     Export CLEAN.ELIGIBILITY_CRITERIA joined with TRACKING.PARSING_PROGRESS
     (to include parsed_json where available).
     Saves to neo4j_criteria.csv.  Returns row count.
+
+    If *parsed_only* is True, only export criteria that have been successfully
+    parsed (parsing_status = 'parsed').  This keeps the Neo4j load fast.
     """
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    sql = """
-        SELECT ec.*, pp.parsing_status, pp.parsed_json
-        FROM CLEAN.ELIGIBILITY_CRITERIA ec
-        LEFT JOIN TRACKING.PARSING_PROGRESS pp ON ec.criterion_id = pp.criterion_id
-        WHERE (%s IS NULL OR ec.therapeutic_area = %s)
-    """
+    if parsed_only:
+        sql = """
+            SELECT ec.*, pp.parsing_status, pp.parsed_json
+            FROM CLEAN.ELIGIBILITY_CRITERIA ec
+            JOIN TRACKING.PARSING_PROGRESS pp ON ec.criterion_id = pp.criterion_id
+            WHERE pp.parsing_status = 'parsed'
+              AND (%s IS NULL OR ec.therapeutic_area = %s)
+        """
+    else:
+        sql = """
+            SELECT ec.*, pp.parsing_status, pp.parsed_json
+            FROM CLEAN.ELIGIBILITY_CRITERIA ec
+            LEFT JOIN TRACKING.PARSING_PROGRESS pp ON ec.criterion_id = pp.criterion_id
+            WHERE (%s IS NULL OR ec.therapeutic_area = %s)
+        """
     cur = conn.cursor()
     cur.execute(sql, (therapeutic_area, therapeutic_area))
     columns = [desc[0] for desc in cur.description]
@@ -221,10 +234,13 @@ def export_entity_links(
 def export_all(
     therapeutic_area: str | None = None,
     output_dir: str | Path | None = None,
+    parsed_only: bool = False,
 ) -> None:
     """
     Connect to Snowflake and run all exports.
     Prints a summary of counts.
+
+    If *parsed_only* is True, only export criteria that have been Cortex-parsed.
     """
     if output_dir is None:
         output_dir = DEFAULT_OUTPUT_DIR
@@ -237,7 +253,9 @@ def export_all(
         n_trials = export_trials(conn, therapeutic_area, output_dir)
         n_conditions = export_conditions(conn, therapeutic_area, output_dir)
         n_interventions = export_interventions(conn, therapeutic_area, output_dir)
-        n_criteria = export_criteria(conn, therapeutic_area, output_dir)
+        n_criteria = export_criteria(
+            conn, therapeutic_area, output_dir, parsed_only=parsed_only,
+        )
         n_links = export_entity_links(conn, output_dir)
 
         elapsed = time.monotonic() - t0
@@ -246,6 +264,7 @@ def export_all(
         print(f"\n{'='*60}")
         print(f"Snowflake -> Neo4j CSV export complete  ({elapsed:.1f}s)")
         print(f"  Therapeutic area : {area_label}")
+        print(f"  Parsed only      : {parsed_only}")
         print(f"  Trials           : {n_trials:>8,}")
         print(f"  Conditions       : {n_conditions:>8,}")
         print(f"  Interventions    : {n_interventions:>8,}")
@@ -277,10 +296,19 @@ def main() -> None:
         default=None,
         help=f"Output directory for CSVs. Default: {DEFAULT_OUTPUT_DIR}",
     )
+    parser.add_argument(
+        "--parsed-only",
+        action="store_true",
+        help="Only export criteria that have been successfully parsed.",
+    )
     args = parser.parse_args()
 
     therapeutic_area = None if args.category.lower() == "all" else args.category
-    export_all(therapeutic_area=therapeutic_area, output_dir=args.output_dir)
+    export_all(
+        therapeutic_area=therapeutic_area,
+        output_dir=args.output_dir,
+        parsed_only=args.parsed_only,
+    )
 
 
 if __name__ == "__main__":
