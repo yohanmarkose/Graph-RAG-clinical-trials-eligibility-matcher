@@ -37,13 +37,25 @@ flowchart LR
     KG --> API
 ```
 
-### How Matching Works
+### Two Retrieval Approaches
+
+The system offers **two candidate retrieval methods** — both feed into the same exclusion filter and scoring pipeline.
+
+**Approach 1 — Baseline Graph Traversal (deterministic, $0 per query):**
+Walks the SNOMED IS_A hierarchy 0-3 hops upward from the patient's condition. Fast, explainable, and always consistent.
+
+**Approach 2 — ReKnoS Multi-hop Reasoning (LLM-guided, ~$0.01 per query):**
+Adapted from our midterm research paper: *"Reasoning of Large Language Models over Knowledge Graphs with Super-Relations"* (Published as a conference paper at ICLR 2025). Uses **super-relations** — abstract traversal steps over the knowledge graph — with an LLM selecting the most promising reasoning path at each hop. This discovers trials through biomarker→criterion→trial and drug→criterion→trial paths that the baseline misses. Results are **unioned** with the baseline — existing matches are never dropped.
+
+Both approaches are available in the UI via a toggle. ReKnoS is optional and augments the baseline.
 
 ```
 Patient Profile
     |
     v
-Stage 1: SNOMED IS_A traversal (0-3 hops) --> candidate trials
+Stage 1: Candidate Retrieval
+    ├── Baseline: SNOMED IS_A traversal (0-3 hops)
+    └── + ReKnoS (optional): LLM-guided multi-hop via super-relations
     |
     v
 Stage 2: Exclusion filter (age, gender, drugs, conditions, biomarkers)
@@ -54,8 +66,6 @@ Stage 3: Score 0-100 (condition 40 + biomarker 25 + therapy 15 + demographics 10
     v
 Stage 4: Top N results + optional LLM explanations
 ```
-
-The matching engine uses **graph traversal, not LLM inference** — it's deterministic, fast, explainable, and costs $0 per query. LLMs are only used for input parsing (free text) and output explanations (optional).
 
 ## Quick Start
 
