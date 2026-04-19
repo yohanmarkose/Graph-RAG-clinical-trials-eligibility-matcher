@@ -69,7 +69,7 @@ Stage 4: Top N results + optional LLM explanations
 
 ## Quick Start
 
-### Option A: Full Pipeline (with Snowflake + real data)
+### Full Pipeline (with Snowflake + real data)
 
 Requires: Docker, Python 3.11+, Snowflake account, OpenAI API key.
 
@@ -129,7 +129,6 @@ uvicorn api.main:app --reload        # Terminal 1
 streamlit run frontend/app.py        # Terminal 2
 ```
 
-Open http://localhost:8501 in your browser.
 
 ## Configuration
 
@@ -142,8 +141,8 @@ All configuration is via environment variables in `.env`. See `.env.example` for
 | `SNOWFLAKE_ACCOUNT` | For full pipeline | Snowflake account identifier |
 | `SNOWFLAKE_USER` | For full pipeline | Snowflake username |
 | `SNOWFLAKE_PASSWORD` | For full pipeline | Snowflake password |
-| `LLM_PROVIDER` | No (default: openai) | `openai` or `anthropic` |
-| `LLM_MODEL` | No (default: gpt-4o-mini) | Model to use for parsing/explanations |
+| `LLM_PROVIDER` | Yes (default: openai) | `openai` or `anthropic` |
+| `LLM_MODEL` | Yes (default: gpt-4o-mini) | Model to use for parsing/explanations |
 
 ## Example
 
@@ -153,10 +152,11 @@ All configuration is via environment variables in `.env`. See `.env.example` for
 **What happens:**
 1. LLM extracts: age=58, gender=Female, conditions=[breast cancer], biomarkers=[HER2+], prior_therapies=[trastuzumab]
 2. Entity linker resolves: breast cancer → SNOMED 254837009, trastuzumab → RxNorm 224905
-3. Graph traversal finds candidate trials via SNOMED IS_A hierarchy (0-3 hops)
-4. Exclusion filter removes trials that exclude her age, gender, or prior trastuzumab
-5. Remaining trials scored 0-100 across 5 dimensions
-6. Top results returned with LLM-generated explanations
+3. **Baseline:** Graph traversal finds candidate trials via SNOMED IS_A hierarchy (0-3 hops) — e.g., breast cancer → malignant neoplasm → trials requiring these conditions
+4. **ReKnoS (if enabled):** LLM selects super-relations like `biomarker_match` → follows HER2 → REQUIRES_BIOMARKER → Criterion → Trial, discovering additional trials that require HER2+ status but don't appear in the IS_A hierarchy walk. Results are unioned with baseline.
+5. Exclusion filter removes trials that exclude her age, gender, or prior trastuzumab
+6. Remaining trials scored 0-100 across 5 dimensions
+7. Top results returned with LLM-generated explanations
 
 **Output:** Ranked list of matching trials with scores, breakdowns, and plain-language explanations.
 
