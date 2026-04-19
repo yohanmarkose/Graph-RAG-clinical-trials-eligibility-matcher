@@ -1,19 +1,7 @@
 """
-Phase 4 (Prompt 6): Export filtered data from Snowflake CLEAN/TRACKING tables
+Export filtered data from Snowflake CLEAN/TRACKING tables
 to CSVs ready for Neo4j bulk import.
 
-Exports:
-  - CLEAN.TRIALS                → data/processed/neo4j_trials.csv
-  - CLEAN.TRIAL_CONDITIONS      → data/processed/neo4j_trial_conditions.csv
-  - CLEAN.TRIAL_INTERVENTIONS   → data/processed/neo4j_trial_interventions.csv
-  - CLEAN.ELIGIBILITY_CRITERIA  → data/processed/neo4j_criteria.csv
-  - TRACKING.ENTITY_LINKING_PROGRESS → data/processed/neo4j_entity_links.csv
-
-All exports can be filtered by therapeutic_area (e.g. 'oncology').
-
-Usage:
-    python -m snowflake_etl.export_for_neo4j --category oncology
-    python -m snowflake_etl.export_for_neo4j --category all
 """
 
 from __future__ import annotations

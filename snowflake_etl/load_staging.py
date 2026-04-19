@@ -1,18 +1,5 @@
 """
-Phase 4 (Prompt 5): Load processed data into Snowflake STAGING tables.
-
-Loads:
-  - data/processed/trials_processed.json   → STAGING.RAW_TRIALS
-  - data/processed/snomed_concepts.csv     → STAGING.RAW_SNOMED_CONCEPTS
-  - data/processed/snomed_synonyms.csv     → STAGING.RAW_SNOMED_SYNONYMS
-  - data/processed/snomed_relationships.csv→ STAGING.RAW_SNOMED_RELATIONSHIPS
-  - data/processed/rxnorm_concepts.csv     → STAGING.RAW_RXNORM_CONCEPTS
-  - data/processed/rxnorm_relationships.csv→ STAGING.RAW_RXNORM_RELATIONSHIPS
-
-Uses MERGE on primary key for idempotent upserts (safe to re-run).
-
-Usage:
-    python -m snowflake_etl.load_staging
+Load processed data into Snowflake STAGING tables.
 """
 
 from __future__ import annotations

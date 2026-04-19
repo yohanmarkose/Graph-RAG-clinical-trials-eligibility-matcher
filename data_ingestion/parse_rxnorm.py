@@ -1,15 +1,3 @@
-"""
-Phase 3 (Prompt 4): RxNorm RRF parser.
-
-Reads RXNCONSO.RRF and RXNREL.RRF from data/rxnorm/, filters to the drug
-concepts relevant for clinical-trial matching (ingredients, brand names,
-clinical drug forms), builds synonym and ingredient-mapping lookups, and
-exports CSVs + JSON for Neo4j loading.
-
-Usage:
-    python -m data_ingestion.parse_rxnorm
-"""
-
 from __future__ import annotations
 
 import json

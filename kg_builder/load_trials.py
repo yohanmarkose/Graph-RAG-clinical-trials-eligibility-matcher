@@ -1,6 +1,4 @@
 """
-Phase 6 (Prompt 8): Load Snowflake-exported trial data into Neo4j.
-
 Reads CSVs produced by ``snowflake_etl/export_for_neo4j.py`` and creates:
   - (:Trial) nodes
   - (:Condition) nodes + [:STUDIES_CONDITION] + optional [:MAPS_TO_SNOMED]

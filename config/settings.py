@@ -1,8 +1,3 @@
-"""
-Application settings loaded from environment variables via pydantic-settings.
-All credentials and configuration are sourced from .env (never hardcoded).
-"""
-
 from __future__ import annotations
 
 from functools import lru_cache

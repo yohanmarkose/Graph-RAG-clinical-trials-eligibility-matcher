@@ -1,6 +1,4 @@
 """
-Phase 6 (Prompt 8): Exact-match entity linking in Neo4j.
-
 Links:
   - (:Condition)    → [:MAPS_TO_SNOMED] → (:SNOMEDConcept)   via exact name match
   - (:Intervention) → [:MAPS_TO_RXNORM] → (:RxNormConcept)   via exact name match

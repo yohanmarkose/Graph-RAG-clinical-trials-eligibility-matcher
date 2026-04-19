@@ -1,14 +1,5 @@
 """
 Tests for the FastAPI backend endpoints.
-
-Integration tests hit the real Neo4j (skipped if unreachable).
-Structural tests run without any services.
-
-Endpoints tested:
-  POST /match
-  POST /patient/parse
-  GET  /trials/{nct_id}
-  GET  /stats
 """
 
 from __future__ import annotations

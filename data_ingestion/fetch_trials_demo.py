@@ -1,6 +1,4 @@
 """
-Phase 2 — Demo fetcher for quick development testing.
-
 Fetches a limited batch of N trials for a specific condition (default: breast cancer)
 and processes them the same way as the full pipeline.
 

@@ -1,18 +1,3 @@
-"""
-Unified LLM provider interface supporting OpenAI and Anthropic backends.
-
-Usage:
-    from llm.provider import get_llm_provider, CachedLLMProvider
-    from config.settings import get_settings
-
-    llm = get_llm_provider(get_settings())
-    # Optional: wrap with cache to avoid redundant API calls during development
-    llm = CachedLLMProvider(llm)
-    llm.load_cache("data/processed/llm_cache.json")
-
-    answer = await llm.complete(system_prompt, user_prompt)
-"""
-
 from __future__ import annotations
 
 import asyncio

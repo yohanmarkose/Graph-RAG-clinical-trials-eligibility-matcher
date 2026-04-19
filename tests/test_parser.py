@@ -1,8 +1,5 @@
 """
 Unit tests for eligibility criteria parsing utilities.
-
-These tests are purely in-process — no LLM calls, no Neo4j required.
-They verify the scoring helpers and any sync parsing logic.
 """
 
 from __future__ import annotations

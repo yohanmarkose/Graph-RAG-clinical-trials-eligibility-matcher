@@ -1,5 +1,3 @@
-"""FastAPI dependency injection — app lifespan and shared resource accessors."""
-
 from __future__ import annotations
 
 import logging

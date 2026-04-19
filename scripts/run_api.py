@@ -1,5 +1,3 @@
-"""Start the Clinical Trial Matcher API with uvicorn."""
-
 import uvicorn
 from config.settings import get_settings
 

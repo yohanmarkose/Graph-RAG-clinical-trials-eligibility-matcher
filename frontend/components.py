@@ -1,5 +1,3 @@
-"""Reusable Streamlit rendering components and lookup tables for the frontend."""
-
 from __future__ import annotations
 
 import streamlit as st

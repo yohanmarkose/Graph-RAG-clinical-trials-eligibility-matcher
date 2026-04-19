@@ -1,19 +1,3 @@
-"""
-Phase 3: SNOMED CT RF2 parser.
-
-Reads SNOMED CT RF2 release files from data/snomed/, filters to the clinically
-relevant subset (~50-100K concepts), builds synonym lookups, and exports CSVs
-and JSON for Neo4j loading.
-
-Expected RF2 files in snomed_dir (Snapshot or Full variants both work):
-  sct2_Concept_*        — concept IDs and active flag
-  sct2_Description_*    — terms / synonyms per concept
-  sct2_Relationship_*   — IS_A and other relationships
-
-Usage:
-    python -m data_ingestion.parse_snomed
-"""
-
 from __future__ import annotations
 
 import json

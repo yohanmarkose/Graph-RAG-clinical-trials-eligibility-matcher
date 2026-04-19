@@ -1,9 +1,5 @@
 """
 Integration tests for the Snowflake layer.
-
-All tests are skipped when SNOWFLAKE_* credentials are absent from .env.
-These verify connectivity, schema existence, and basic table structure —
-not data correctness, which belongs in transform/export tests.
 """
 
 from __future__ import annotations

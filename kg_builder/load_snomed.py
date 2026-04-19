@@ -1,6 +1,4 @@
 """
-Phase 5 (Prompt 7): Load SNOMED CT into Neo4j and create all graph indexes.
-
 Functions:
   1. create_indexes()              — constraints + indexes for the full schema
   2. load_snomed_concepts()        — (:SNOMEDConcept) nodes from CSV

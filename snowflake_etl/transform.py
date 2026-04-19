@@ -1,5 +1,5 @@
 """
-Phase 4 (Prompt 5): Snowflake transformations — STAGING → CLEAN → TRACKING.
+Snowflake transformations — STAGING → CLEAN → TRACKING.
 
 Functions:
   1. classify_therapeutic_areas()     STAGING.RAW_TRIALS → CLEAN.TRIALS

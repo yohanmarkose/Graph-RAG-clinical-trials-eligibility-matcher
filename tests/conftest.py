@@ -1,14 +1,3 @@
-"""
-Shared pytest fixtures for the clinical-trial-matcher test suite.
-
-Integration tests that require a live Neo4j are automatically skipped
-when Neo4j is unreachable, so the suite never hard-fails in CI without
-the database.
-
-All async fixtures use pytest-asyncio (configured in pyproject.toml with
-asyncio_mode = "auto").
-"""
-
 from __future__ import annotations
 
 import asyncio

@@ -1,5 +1,5 @@
 """
-Phase 4 (Prompt 6): Track LLM parsing progress in Snowflake TRACKING tables.
+Track LLM parsing progress in Snowflake TRACKING tables.
 
 Functions:
   1. get_unparsed_criteria()   — fetch pending criteria for a therapeutic area

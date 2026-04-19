@@ -1,11 +1,3 @@
-"""
-Pydantic models for the patient profile passed into the matching engine.
-
-Conditions and prior therapies are stored as ontology concept IDs
-(SNOMED CUIs / RxNorm CUIs) for graph traversal, with parallel
-free-text name lists for display.
-"""
-
 from __future__ import annotations
 
 from typing import Optional

@@ -1,11 +1,8 @@
 """
-Phase 4 (Prompt 5): Snowflake schema setup.
+Snowflake schema setup.
 
 Creates the CLINICAL_TRIALS database with STAGING, CLEAN, and TRACKING schemas
-and all tables idempotently.  Safe to re-run at any time.
-
-Usage:
-    python -m snowflake_etl.setup_schema
+and all tables idempotently
 """
 
 from __future__ import annotations

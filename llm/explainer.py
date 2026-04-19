@@ -1,26 +1,3 @@
-"""LLM-powered match explanation and free-text patient parsing.
-
-Usage::
-
-    from llm.explainer import MatchExplainer
-    from llm.provider import get_llm_provider
-    from nlp.entity_linker import EntityLinker
-    from config.settings import get_settings
-
-    settings = get_settings()
-    llm      = get_llm_provider(settings)
-    linker   = EntityLinker()
-    explainer = MatchExplainer(llm, linker)
-
-    # Explain a list of match results from MatchEngine.match()
-    enriched = await explainer.explain_matches(patient, matches)
-
-    # Parse a free-text description into a PatientProfile
-    profile = await explainer.parse_free_text_patient(
-        "58-year-old woman with HER2+ metastatic breast cancer, prior trastuzumab"
-    )
-"""
-
 from __future__ import annotations
 
 import asyncio

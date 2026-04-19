@@ -1,11 +1,5 @@
 """
 Integration tests for the MatchEngine.
-
-Requires a running Neo4j instance seeded with demo data:
-    docker-compose up -d
-    python scripts/seed_demo_data.py
-
-All tests are skipped automatically when Neo4j is unreachable.
 """
 
 from __future__ import annotations

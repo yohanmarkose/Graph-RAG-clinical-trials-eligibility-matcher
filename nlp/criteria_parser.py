@@ -1,6 +1,4 @@
 """
-Phase 8 (Prompt 10): Parse eligibility criteria using Snowflake Cortex.
-
 Uses Cortex COMPLETE() to parse free-text criteria into structured JSON
 directly inside Snowflake — no external LLM API required.
 

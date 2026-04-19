@@ -1,6 +1,4 @@
 """
-Phase 5 (Prompt 7): Ontology backbone orchestrator.
-
 Connects to Neo4j and runs in order:
   1. Create indexes & constraints
   2. Load SNOMED CT concepts + IS_A relationships
