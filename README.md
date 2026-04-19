@@ -45,7 +45,7 @@ The system offers **two candidate retrieval methods** — both feed into the sam
 Walks the SNOMED IS_A hierarchy 0-3 hops upward from the patient's condition. Fast, explainable, and always consistent.
 
 **Approach 2 — ReKnoS Multi-hop Reasoning (LLM-guided, ~$0.01 per query):**
-Adapted from our midterm research paper: *"Reasoning of Large Language Models over Knowledge Graphs with Super-Relations"* (Published as a conference paper at ICLR 2025). Uses **super-relations** — abstract traversal steps over the knowledge graph — with an LLM selecting the most promising reasoning path at each hop. This discovers trials through biomarker→criterion→trial and drug→criterion→trial paths that the baseline misses. Results are **unioned** with the baseline — existing matches are never dropped.
+Adapted from our midterm research paper: *"Reasoning of Large Language Models over Knowledge Graphs with Super-Relations"* (Published as a conference paper at ICLR 2025). Uses **super-relations** — abstract traversal steps over the knowledge graph — with an LLM selecting the most promising reasoning path at each hop. This produces more relevant and accurate results by discovering trials through biomarker→criterion→trial and drug→criterion→trial paths that the baseline's fixed hierarchy walk cannot reach (e.g., tumor-agnostic immunotherapy trials for TMB-high patients, or PARP inhibitor trials for BRCA-mutant patients). Results are **unioned** with the baseline — existing matches are never dropped, only augmented with higher-relevance candidates.
 
 Both approaches are available in the UI via a toggle. ReKnoS is optional and augments the baseline.
 
