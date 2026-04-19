@@ -111,7 +111,7 @@ uvicorn api.main:app --reload        # Terminal 1
 streamlit run frontend/app.py        # Terminal 2
 ```
 
-### Option B: Demo Mode (no Snowflake required)
+### Demo Mode (no Snowflake required)
 
 ```bash
 # 1. Clone and configure
@@ -125,30 +125,6 @@ docker compose up -d
 python scripts/seed_demo_data.py
 
 # 4. Start the app
-uvicorn api.main:app --reload        # Terminal 1
-streamlit run frontend/app.py        # Terminal 2
-```
-
-### Option C: From Database Dump (fastest)
-
-If you have `backup/neo4j.dump` (194 MB file with the full graph):
-
-```bash
-cp .env.example .env        # Set NEO4J_PASSWORD and OPENAI_API_KEY
-pip install -e .
-docker compose up -d
-docker compose stop neo4j
-# Load the dump (Linux/Mac):
-docker run --rm \
-  -v clinical-trial-matcher_neo4j_data:/data \
-  -v $(pwd)/backup:/backup \
-  neo4j:5.26-community neo4j-admin database load neo4j --from-path=/backup --overwrite-destination
-# Load the dump (Windows with Git Bash):
-MSYS_NO_PATHCONV=1 docker run --rm \
-  -v clinical-trial-matcher_neo4j_data:/data \
-  -v "$(pwd)/backup":/backup \
-  neo4j:5.26-community neo4j-admin database load neo4j --from-path=/backup --overwrite-destination
-docker compose start neo4j
 uvicorn api.main:app --reload        # Terminal 1
 streamlit run frontend/app.py        # Terminal 2
 ```
