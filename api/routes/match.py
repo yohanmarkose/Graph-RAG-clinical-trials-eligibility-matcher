@@ -61,6 +61,14 @@ async def match_patient(
     therapeutic_area: Optional[str] = Query(
         default=None, description="Override patient's therapeutic area filter"
     ),
+    use_reknos: bool = Query(
+        default=False,
+        description=(
+            "Augment Stage 1 candidate finding with ReKnoS multi-hop reasoning. "
+            "Results are unioned with the baseline SNOMED traversal. "
+            "Requires REKNOS_ENABLED=true in .env."
+        ),
+    ),
     match_engine: MatchEngine = Depends(get_match_engine),
     explainer: MatchExplainer = Depends(get_explainer),
 ):
@@ -75,7 +83,7 @@ async def match_patient(
         patient = patient.model_copy(update={"therapeutic_area": therapeutic_area})
 
     try:
-        raw_matches = await match_engine.match(patient, top_n=top_n)
+        raw_matches = await match_engine.match(patient, top_n=top_n, use_reknos=use_reknos)
     except Exception:
         logger.exception("MatchEngine.match() failed for patient: %s", patient)
         raise HTTPException(status_code=500, detail="Matching engine error — check server logs")

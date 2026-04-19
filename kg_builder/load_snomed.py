@@ -98,7 +98,7 @@ async def load_snomed_relationships(driver, csv_path: str | Path) -> int:
     csv_path = Path(csv_path)
     df = pd.read_csv(csv_path, dtype=str).fillna("")
     # Only IS_A relationships for the hierarchy
-    df_isa = df[df["type"].str.lower() == "is_a"]
+    df_isa = df[df["relationship_type"].str.lower() == "is_a"]
     total = 0
 
     async with driver.session() as session:
