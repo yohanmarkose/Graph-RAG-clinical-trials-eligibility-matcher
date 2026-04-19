@@ -830,7 +830,190 @@ sequenceDiagram
 
 ---
 
-## 8. How to Expand
+## 8. Why Graph Traversal, Not RAG?
+
+A common approach for this kind of problem is Retrieval-Augmented Generation (RAG) — embed trial documents, vector-search for similar ones, and let an LLM reason over the results. This project uses a different architecture, and the choice is deliberate.
+
+### What this system does (Graph-first)
+
+```
+Patient → Graph traversal finds trials → LLM explains results
+```
+
+The graph does the **reasoning** (traversal, matching, scoring). The LLM does the **communication** (parsing free text, generating explanations). The matching itself is 100% deterministic graph queries — no LLM in the critical path.
+
+### What RAG would do (LLM-first)
+
+```
+Patient → Embed → Vector search against trial chunks → LLM reasons over top-K → Answer
+```
+
+### Comparison
+
+| Factor | Graph Traversal (this project) | Pure RAG |
+|--------|-------------------------------|----------|
+| **Determinism** | Same patient always gets same results | Non-deterministic — LLM may give different answers |
+| **Explainability** | Full trace: "Patient 254837009 IS_A 363346000 which is REQUIRES_CONDITION on Criterion X of Trial Y" | Black box — "the LLM said so" |
+| **Hierarchy reasoning** | SNOMED IS_A traversal gives medical reasoning for free — breast cancer IS_A thoracic malignancy IS_A malignant disease | "Breast cancer" and "thoracic malignancy" are just different text strings |
+| **Speed** | Milliseconds (Cypher queries) | Seconds (embedding + LLM inference) |
+| **Cost per query** | $0 for matching, ~$0.01 for optional explanations | $0.01-0.10 per query (LLM inference every time) |
+| **Auditability** | A doctor can verify each graph edge is correct | Critical for healthcare compliance |
+| **Hallucination risk** | Zero in matching logic | LLM might say a patient qualifies when they don't |
+
+### This project is actually a hybrid
+
+The system uses LLMs where they're strong (language) and graphs where they're strong (structured reasoning):
+
+| Component | Technology | LLM? |
+|-----------|-----------|------|
+| Find candidate trials | Neo4j Cypher — SNOMED hierarchy walk | No |
+| Apply exclusions | Neo4j Cypher — edge queries + Python checks | No |
+| Score trials 0-100 | Python math | No |
+| Rank and return top N | Python sort | No |
+| **Parse free text input** | **gpt-4o-mini** | **Yes (optional)** |
+| **Parse criteria into graph structure** | **Snowflake Cortex (llama3.3-70b)** | **Yes (one-time)** |
+| **Generate explanations** | **gpt-4o-mini** | **Yes (optional)** |
+
+For a masters project, this hybrid is arguably more sophisticated than either approach alone — it demonstrates understanding of when to use each tool.
+
+---
+
+## 9. How Patient Input Reaches the Graph
+
+There are two input modes in the Streamlit frontend, but both produce the same `PatientProfile` JSON that hits the matching engine.
+
+### Mode 1: Structured Input (no LLM, no cost)
+
+The user selects from dropdowns. SNOMED/RxNorm IDs are looked up from hardcoded dictionaries in `frontend/components.py`:
+
+```
+User selects "Breast Cancer" from dropdown
+  → CONDITION_TO_SNOMED["Breast Cancer"] = "254837009"
+  → Sent directly as conditions: ["254837009"]
+
+User types "trastuzumab" in prior therapies
+  → DRUG_TO_RXNORM["trastuzumab"] = "224905"
+  → Sent directly as prior_therapies: ["224905"]
+```
+
+No network calls, no LLM, instant.
+
+### Mode 2: Free Text (uses LLM, ~$0.001 per parse)
+
+```
+User types: "58-year-old woman with HER2+ breast cancer, prior trastuzumab, ECOG 1"
+  │
+  ▼
+POST /patient/parse → gpt-4o-mini extracts structured fields:
+  age=58, gender=Female, conditions=["breast cancer"],
+  biomarkers=[{name: "HER2", status: "positive"}],
+  prior_therapies=["trastuzumab"]
+  │
+  ▼
+EntityLinker resolves names to ontology IDs:
+  "breast cancer" → exact match in snomed_synonym_lookup.json → ["254837009"]
+  "trastuzumab" → exact match in rxnorm_synonym_lookup.json → ["224905"]
+  │
+  ▼
+If no exact match → RapidFuzz fuzzy match against 465K SNOMED terms
+  "HER2+ breast carcinoma" → fuzzy score 87.3 → "carcinoma of breast" → 254838004
+  │
+  ▼
+If fuzzy score too low → LLM fallback: ask gpt-4o-mini for canonical name → re-match
+```
+
+Both modes produce the identical payload for the matching engine.
+
+### What happens with multiple conditions?
+
+If a patient has breast cancer (254837009) AND diabetes (44054006):
+
+- **Stage 1** uses `UNWIND` — loops over both IDs, finds trials matching **ANY** condition (OR logic)
+- Breast cancer trials are found, diabetes trials are found, all go into the same candidate list
+- **Stage 3** is where multiple conditions matter for scoring — if a trial requires both conditions and the patient has both, it scores higher (40/40) than a trial requiring both but patient only matching one (20/40)
+
+---
+
+## 10. Operational Details
+
+### Cost Breakdown
+
+| Operation | Cost | When |
+|-----------|------|------|
+| Graph matching (Stages 1-3) | $0 | Every query |
+| LLM explanations (Stage 4) | ~$0.001 per trial | Optional, per query |
+| Free text parsing | ~$0.001 | Only in free text mode |
+| Cortex criteria parsing | ~2-3 Snowflake credits for 25K | One-time setup |
+| SNOMED/RxNorm/trial loading | $0 | One-time setup |
+
+A typical demo session with 20 searches and explanations enabled costs about **$0.20**.
+
+### Database Dump and Portability
+
+The entire Neo4j graph can be exported as a single `.dump` file (~194 MB) containing all nodes, edges, indexes, and constraints. This allows:
+
+- **New team members** to skip the entire loading pipeline — just restore the dump and run the app
+- **Neo4j Aura (cloud)** upload via the console's "Import Database" feature
+- **Neo4j Desktop** restore via `neo4j-admin database load`
+
+To create a dump:
+```bash
+docker compose stop neo4j
+MSYS_NO_PATHCONV=1 docker run --rm \
+  -v clinical-trial-matcher_neo4j_data:/data \
+  -v "$(pwd)/backup":/backup \
+  neo4j:5.26-community neo4j-admin database dump neo4j --to-path=/backup
+docker compose start neo4j
+```
+
+### Running the App
+
+**Option 1 — Local (recommended for development):**
+```bash
+uvicorn api.main:app --reload        # Terminal 1: API on :8000
+streamlit run frontend/app.py        # Terminal 2: UI on :8501
+```
+
+**Option 2 — Make targets:**
+```bash
+make api        # Start API
+make frontend   # Start Streamlit
+make demo       # One-command: Neo4j + seed + API
+```
+
+**Option 3 — Docker Compose (all-in-one):**
+```bash
+docker compose --profile app up -d   # Starts Neo4j + API + Streamlit
+```
+
+### Useful Neo4j Queries for Exploration
+
+Full schema visualization:
+```cypher
+CALL db.schema.visualization()
+```
+
+A single trial with all its connections:
+```cypher
+MATCH path = (t:Trial {nct_id: 'NCT04652609'})-[*1..2]->(n)
+RETURN path
+```
+
+Criteria linked to SNOMED (the matching edges):
+```cypher
+MATCH path = (t:Trial)-[:HAS_CRITERION]->(cr:Criterion)-[:REQUIRES_CONDITION]->(sc:SNOMEDConcept)
+RETURN path LIMIT 10
+```
+
+SNOMED hierarchy around breast cancer:
+```cypher
+MATCH path = (child:SNOMEDConcept)-[:IS_A]->(parent:SNOMEDConcept {concept_id: '254837009'})
+RETURN path LIMIT 20
+```
+
+---
+
+## 11. How to Expand
 
 ### Adding a new therapeutic area
 

@@ -21,6 +21,37 @@ services:
       start_period: 60s
     restart: unless-stopped
 
+  # Optional: run the API in a container
+  api:
+    build: .
+    container_name: clinical-trial-api
+    command: uvicorn api.main:app --host 0.0.0.0 --port 8000
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      neo4j:
+        condition: service_healthy
+    profiles:
+      - app
+
+  # Optional: run Streamlit in a container
+  streamlit:
+    build: .
+    container_name: clinical-trial-ui
+    command: streamlit run frontend/app.py --server.port 8501 --server.address 0.0.0.0
+    ports:
+      - "8501:8501"
+    env_file:
+      - .env
+    environment:
+      - API_URL=http://api:8000
+    depends_on:
+      - api
+    profiles:
+      - app
+
 volumes:
   neo4j_data:
   neo4j_plugins:
