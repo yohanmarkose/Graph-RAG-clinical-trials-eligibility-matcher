@@ -12,7 +12,7 @@ All Neo4j I/O uses the async driver.
 from __future__ import annotations
 
 import logging
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from neo4j import AsyncDriver  # type: ignore[import-untyped]
 
@@ -26,6 +26,9 @@ from matcher.scorer import (
     score_trial_quality,
 )
 
+if TYPE_CHECKING:
+    from matcher.reknos_finder import ReKnoSCandidateFinder
+
 logger = logging.getLogger(__name__)
 
 
@@ -33,29 +36,75 @@ class MatchEngine:
     """Matches a patient profile against recruiting clinical trials in Neo4j.
 
     Args:
-        driver: Async Neo4j driver (from ``neo4j.AsyncGraphDatabase.driver``).
-        database: Neo4j database name (default ``"neo4j"``).
+        driver:        Async Neo4j driver (from ``neo4j.AsyncGraphDatabase.driver``).
+        database:      Neo4j database name (default ``"neo4j"``).
+        reknos_finder: Optional ReKnoS candidate finder. When provided and
+                       ``use_reknos=True`` is passed to ``match()``, its results
+                       are unioned with the existing SNOMED IS_A traversal so
+                       existing behaviour is never degraded.
     """
 
-    def __init__(self, driver: AsyncDriver, database: str = "neo4j") -> None:
+    def __init__(
+        self,
+        driver: AsyncDriver,
+        database: str = "neo4j",
+        reknos_finder: ReKnoSCandidateFinder | None = None,
+    ) -> None:
         self._driver = driver
         self._database = database
+        self._reknos_finder = reknos_finder
 
     # ------------------------------------------------------------------
     # Stage 1 — Coarse candidate retrieval
     # ------------------------------------------------------------------
 
-    async def find_candidate_trials(self, patient: PatientProfile) -> list[str]:
-        """Return NCT IDs of trials that potentially match the patient's conditions.
+    async def find_candidate_trials(
+        self,
+        patient: PatientProfile,
+        use_reknos: bool = False,
+    ) -> list[str]:
+        """Return NCT IDs of trials that potentially match the patient's profile.
 
-        Uses two complementary Cypher queries:
-          A) Walk the SNOMED IS_A hierarchy (0..3 hops) from each patient
-             condition to find trials whose Criterion nodes REQUIRE_CONDITION
-             an ancestor concept.
+        Always runs the baseline SNOMED IS_A Cypher traversal.  When
+        ``use_reknos=True`` and a ``ReKnoSCandidateFinder`` was supplied at
+        construction time, the ReKnoS results are unioned in — existing
+        results are never dropped.
+
+        Args:
+            patient:    Patient profile with SNOMED/RxNorm concept IDs.
+            use_reknos: If True, augment with LLM-guided multi-hop traversal.
+
+        Returns:
+            Deduplicated list of NCT ID strings.
+        """
+        baseline_ids = await self._find_candidates_cypher(patient)
+
+        if use_reknos and self._reknos_finder is not None:
+            try:
+                reknos_ids = await self._reknos_finder.find_candidates(patient)
+                combined = list(set(baseline_ids) | set(reknos_ids))
+                logger.info(
+                    "Stage 1 (ReKnoS union): baseline=%d reknos=%d combined=%d",
+                    len(baseline_ids),
+                    len(reknos_ids),
+                    len(combined),
+                )
+                return combined
+            except Exception:
+                logger.exception(
+                    "ReKnoS candidate finding failed — falling back to baseline"
+                )
+
+        return baseline_ids
+
+    async def _find_candidates_cypher(self, patient: PatientProfile) -> list[str]:
+        """Baseline Stage 1: fixed SNOMED IS_A Cypher traversal (0..3 hops).
+
+        Uses two complementary queries:
+          A) Walk the SNOMED IS_A hierarchy from each patient condition to find
+             trials whose Criterion nodes REQUIRE_CONDITION an ancestor concept.
           B) Match via the Trial→Condition→SNOMED path for trials without
              parsed Criterion nodes yet.
-
-        Both queries respect the optional therapeutic_area filter.
 
         Returns:
             Deduplicated list of NCT ID strings.
@@ -104,7 +153,7 @@ class MatchEngine:
 
         candidates = list(nct_ids_a | nct_ids_b)
         logger.info(
-            "Stage 1: %d candidates from SNOMED traversal (%d via criteria, %d via condition nodes)",
+            "Stage 1 (baseline): %d candidates (%d via criteria, %d via condition nodes)",
             len(candidates),
             len(nct_ids_a),
             len(nct_ids_b),
@@ -415,14 +464,20 @@ class MatchEngine:
         self,
         patient: PatientProfile,
         top_n: int = 10,
+        use_reknos: bool = False,
     ) -> list[dict]:
         """Run all four matching stages and return the top N ranked trials.
 
         Pipeline:
-          Stage 1 → find_candidate_trials   (SNOMED graph traversal)
+          Stage 1 → find_candidate_trials   (SNOMED graph traversal ± ReKnoS)
           Stage 2 → apply_exclusions        (hard demographic + exclusion filter)
           Stage 3 → score_trials            (0-100 inclusion score)
           Stage 4 → enrich top N with full trial metadata
+
+        Args:
+            patient:    Patient profile.
+            top_n:      Maximum number of trials to return.
+            use_reknos: Augment Stage 1 with ReKnoS multi-hop reasoning.
 
         Returns:
             List of MatchResult dicts (at most ``top_n``), sorted by score desc:
@@ -433,7 +488,7 @@ class MatchEngine:
             }
         """
         # Stage 1
-        candidates = await self.find_candidate_trials(patient)
+        candidates = await self.find_candidate_trials(patient, use_reknos=use_reknos)
         if not candidates:
             logger.info("No candidates found for patient profile")
             return []

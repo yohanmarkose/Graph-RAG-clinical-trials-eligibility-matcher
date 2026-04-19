@@ -121,6 +121,34 @@ class APISettings(BaseSettings):
     )
 
 
+class ReKnoSSettings(BaseSettings):
+    """Hyperparameters for the ReKnoS multi-hop candidate finder.
+
+    Set REKNOS_ENABLED=true in .env to activate ReKnoS on startup.
+    The ``use_reknos`` query parameter on POST /match still controls
+    per-request opt-in regardless of this flag.
+    """
+
+    enabled: bool = Field(default=False, alias="REKNOS_ENABLED")
+    """Pre-initialise ReKnoSCandidateFinder at startup (requires an LLM key)."""
+
+    width: int = Field(default=3, alias="REKNOS_WIDTH")
+    """N — number of super-relations selected per reasoning step."""
+
+    depth: int = Field(default=3, alias="REKNOS_DEPTH")
+    """L — maximum reasoning depth (hops)."""
+
+    use_stop_check: bool = Field(default=True, alias="REKNOS_USE_STOP_CHECK")
+    """Whether to ask the LLM to stop early once trials are found."""
+
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+        populate_by_name=True,
+    )
+
+
 class Settings(BaseSettings):
     """Root settings object — compose all sub-settings here."""
 
@@ -136,6 +164,7 @@ class Settings(BaseSettings):
     llm: LLMSettings = Field(default_factory=LLMSettings)
     pipeline: PipelineSettings = Field(default_factory=PipelineSettings)
     api: APISettings = Field(default_factory=APISettings)
+    reknos: ReKnoSSettings = Field(default_factory=ReKnoSSettings)
 
     def model_post_init(self, __context: Any) -> None:
         # Snowflake settings are optional — only load if account is set

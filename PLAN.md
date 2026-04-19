@@ -477,7 +477,7 @@ Also create `data_ingestion/fetch_trials_demo.py` — a simpler version that fet
 Handle edge cases: missing fields should default to None, empty intervention lists, age parsing for "N/A" or missing values.
 
 Use the config from `config/settings.py` for the base URL.
-```
+
 
 ---
 
@@ -876,11 +876,11 @@ Create `snowflake_etl/transform.py`:
 7. `__main__` block that runs all transforms in sequence
 
 Add a helper function `get_therapeutic_area_stats() -> dict` that returns counts by area — used by the pipeline runner to show what's available.
-```
+
 
 ### Claude Code Prompt 6 — Snowflake Export for Neo4j
 
-```
+
 In the clinical-trial-matcher project, create the Snowflake → Neo4j export pipeline. This reads cleaned data from Snowflake (filtered by therapeutic area) and exports it as CSVs ready for Neo4j bulk import.
 
 Create `snowflake_etl/export_for_neo4j.py`:
@@ -960,8 +960,6 @@ Create `snowflake_etl/track_parsing.py`:
 
 5. `def log_pipeline_run(conn, run_type: str, therapeutic_area: str, status: str, records_processed: int, records_succeeded: int, records_failed: int, error: str | None)`:
    - Insert into TRACKING.PIPELINE_RUNS
-```
-
 ---
 
 ## Phase 5: Knowledge Graph — Ontology Backbone
@@ -1693,7 +1691,7 @@ Create `scripts/run_pipeline.py`:
   ```
 - Steps for --demo: check Neo4j → seed data → run tests → start API
 - Steps for --full: check Neo4j + Snowflake → fetch trials → parse SNOMED/RxNorm → load Snowflake → transform → export → load Neo4j → parse criteria → link entities → run tests → start API
-```
+
 
 ---
 

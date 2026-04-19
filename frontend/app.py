@@ -58,6 +58,7 @@ ECOG_OPTS = ["Unknown", "0", "1", "2", "3", "4"]
 # ---------------------------------------------------------------------------
 
 DEMOS: dict[str, dict] = {
+    # ── Baseline demos (also work without ReKnoS) ──────────────────────────
     "HER2+ Breast Cancer": {
         "age": 58,
         "gender": "Female",
@@ -84,7 +85,7 @@ DEMOS: dict[str, dict] = {
             "No prior TKI therapy. ECOG 0."
         ),
     },
-    "Colorectal Cancer": {
+    "Colorectal + Oxaliplatin": {
         "age": 52,
         "gender": "Female",
         "conditions": ["Colorectal Cancer"],
@@ -95,6 +96,48 @@ DEMOS: dict[str, dict] = {
         "freetext": (
             "52-year-old woman with metastatic colorectal cancer. "
             "Prior FOLFOX (oxaliplatin + fluorouracil). ECOG 1."
+        ),
+    },
+    # ── ReKnoS showcase demos (enable 'ReKnoS Multi-hop Reasoning' checkbox) ─
+    "★ TMB-High (Tumor Agnostic)": {
+        "age": 61,
+        "gender": "Male",
+        "conditions": ["Colorectal Cancer"],
+        "biomarkers": "TMB=positive, MSI-H=positive",
+        "prior_therapies": "oxaliplatin, fluorouracil",
+        "ecog": "1",
+        "area": "Oncology",
+        "freetext": (
+            "61-year-old man with colorectal cancer. TMB-high and MSI-H confirmed. "
+            "Prior FOLFOX. ECOG 1. "
+            "Enable ReKnoS to find tumor-agnostic immunotherapy trials that baseline misses."
+        ),
+    },
+    "★ Ovarian + BRCA1 + Carboplatin": {
+        "age": 55,
+        "gender": "Female",
+        "conditions": ["Ovarian Cancer"],
+        "biomarkers": "BRCA1=positive",
+        "prior_therapies": "carboplatin",
+        "ecog": "1",
+        "area": "Oncology",
+        "freetext": (
+            "55-year-old woman with recurrent ovarian cancer. BRCA1 mutation confirmed. "
+            "Prior platinum-based chemotherapy (carboplatin). ECOG 1. "
+            "Enable ReKnoS to surface PARP inhibitor maintenance trials."
+        ),
+    },
+    "★ BRAF+ Melanoma": {
+        "age": 47,
+        "gender": "Male",
+        "conditions": ["Melanoma"],
+        "biomarkers": "BRAF=positive",
+        "prior_therapies": "",
+        "ecog": "0",
+        "area": "Oncology",
+        "freetext": (
+            "47-year-old man with unresectable metastatic melanoma. BRAF V600E mutation confirmed. "
+            "No prior systemic therapy. ECOG 0."
         ),
     },
 }
@@ -143,13 +186,13 @@ def _load_demo(name: str) -> None:
 # API helpers
 # ---------------------------------------------------------------------------
 
-def _call_match(payload: dict, top_n: int, explanations: bool) -> dict | None:
+def _call_match(payload: dict, top_n: int, explanations: bool, use_reknos: bool = False) -> dict | None:
     try:
         resp = requests.post(
             f"{API_URL}/match",
             json=payload,
-            params={"top_n": top_n, "include_explanations": explanations},
-            timeout=90,
+            params={"top_n": top_n, "include_explanations": explanations, "use_reknos": use_reknos},
+            timeout=120,
         )
         resp.raise_for_status()
         return resp.json()
@@ -238,18 +281,17 @@ st.caption(
 # Demo buttons
 # ---------------------------------------------------------------------------
 
-st.markdown("**Quick demos:**")
+st.markdown("**Quick demos** — baseline:")
 d_col1, d_col2, d_col3 = st.columns(3)
-for col, demo_name in zip(
-    [d_col1, d_col2, d_col3],
-    list(DEMOS.keys()),
-):
-    col.button(
-        demo_name,
-        on_click=_load_demo,
-        args=(demo_name,),
-        use_container_width=True,
-    )
+_baseline_demos = [k for k in DEMOS if not k.startswith("★")]
+for col, demo_name in zip([d_col1, d_col2, d_col3], _baseline_demos):
+    col.button(demo_name, on_click=_load_demo, args=(demo_name,), use_container_width=True)
+
+st.markdown("**ReKnoS showcase** — enable *ReKnoS Multi-hop Reasoning* in the sidebar:")
+r_col1, r_col2, r_col3 = st.columns(3)
+_reknos_demos = [k for k in DEMOS if k.startswith("★")]
+for col, demo_name in zip([r_col1, r_col2, r_col3], _reknos_demos):
+    col.button(demo_name, on_click=_load_demo, args=(demo_name,), use_container_width=True)
 
 st.divider()
 
@@ -363,6 +405,15 @@ with st.sidebar:
 
     top_n = st.slider("Max Results", 1, 20, 10)
     include_explanations = st.checkbox("Include LLM Explanations", value=True)
+    use_reknos = st.checkbox(
+        "ReKnoS Multi-hop Reasoning",
+        value=False,
+        help=(
+            "Augments candidate finding with LLM-guided graph traversal (ReKnoS, ICLR 2025). "
+            "Finds trials via biomarker→criterion→trial and therapy→criterion→trial paths "
+            "that the baseline SNOMED traversal misses. Requires REKNOS_ENABLED=true in .env."
+        ),
+    )
 
     find_clicked = st.button(
         "🔍 Find Matching Trials",
@@ -386,7 +437,7 @@ if find_clicked:
             else "Searching trials…"
         )
         with st.spinner(spinner_msg):
-            st.session_state.results = _call_match(search_payload, top_n, include_explanations)
+            st.session_state.results = _call_match(search_payload, top_n, include_explanations, use_reknos)
 
 # ---------------------------------------------------------------------------
 # Results
