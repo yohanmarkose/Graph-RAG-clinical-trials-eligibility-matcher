@@ -2,12 +2,6 @@
 
 Match patients to eligible clinical trials using a **Neo4j knowledge graph**, **SNOMED CT / RxNorm** medical ontologies, **Snowflake** for data staging, and **LLMs** for criteria parsing and explanations.
 
-**Team 3**
-
-- Navya Ravuri
-- Pavan Garlapati
-- Yohan Markose
-
 ## Why This Exists
 
 There are 80,000+ active clinical trials on ClinicalTrials.gov, each with complex eligibility criteria written in medical jargon. A patient with breast cancer might qualify for hundreds of trials but would never find them manually. This system ingests all those trials, builds a knowledge graph connecting trials to medical concepts, and matches patients to eligible trials in seconds using graph traversal — not brute-force text search.
