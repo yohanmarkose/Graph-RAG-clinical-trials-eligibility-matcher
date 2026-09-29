@@ -1,0 +1,3 @@
+# Use a managed auth provider instead of a custom user table
+
+Physician login could be built as a custom users table with hashed passwords and JWTs in FastAPI, or delegated to a managed identity provider. We decided on a managed provider (Auth0, chosen for being free at our scale — dozens of users, well under every major provider's free-tier MAU cap — and being a widely-used industry-standard choice) rather than hand-rolling auth alongside the other infrastructure migrations already underway. Custom auth remains the fallback if a managed provider ever stops being free or fit for purpose at our scale.

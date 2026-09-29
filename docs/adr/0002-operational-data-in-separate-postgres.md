@@ -1,0 +1,3 @@
+# Physician/patient data lives in a dedicated Postgres store
+
+Snowflake holds analytical/reference data (trials, ontology) and Neo4j holds the matching graph — neither is shaped for operational, low-volume, relational data like physician accounts and saved patient profiles. We decided to add a small dedicated Postgres database (e.g. Neon or Supabase) scoped to physician/patient records only, rather than stretching Snowflake or Neo4j to hold them. Snowflake and Neo4j stay reference-only stores that are rebuilt/reloaded wholesale; the Postgres store is the only place with per-user operational state.
